@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" standalone="yes" ?>
+<rss version="2.0" xmlns:atom="http://www.w3.org/2005/Atom">
+  <channel>
+    <title>Posts on My New Hugo Site</title>
+    <link>http://example.org/posts/</link>
+    <description>Recent content in Posts on My New Hugo Site</description>
+    <generator>Hugo -- gohugo.io</generator>
+    <language>en-us</language>
+    <lastBuildDate>Mon, 13 Jul 2020 17:38:53 +0100</lastBuildDate>
+    
+	<atom:link href="http://example.org/posts/index.xml" rel="self" type="application/rss+xml" />
+    
+    
+    <item>
+      <title>My First Post</title>
+      <link>http://example.org/posts/my-first-post/</link>
+      <pubDate>Mon, 13 Jul 2020 17:38:53 +0100</pubDate>
+      
+      <guid>http://example.org/posts/my-first-post/</guid>
+      <description></description>
+    </item>
+    
+    <item>
+      <title>SSH, the right way</title>
+      <link>http://example.org/posts/ssh-the-right-way/</link>
+      <pubDate>Mon, 13 Jul 2020 17:38:53 +0100</pubDate>
+      
+      <guid>http://example.org/posts/ssh-the-right-way/</guid>
+      <description>When I first learned what SSH was, I thought I had it all figured out. I mean, how complicated could it be? It&amp;rsquo;s just the command line, with remote access, right?
+Until I was faced with the dreaded error message:
+Permission denied (publickey).  I wrestled with this error message for about half an hour every time I tried to set up keys on a new server or from a new client.</description>
+    </item>
+    
+  </channel>
+</rss>

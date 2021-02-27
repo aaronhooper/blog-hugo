@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en-us">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>SSH, the right way | My New Hugo Site</title>
+    <link rel="stylesheet" href="/css/style.css" />
+    <link rel="stylesheet" href="/css/fonts.css" />
+    
+  </head>
+
+  <body>
+    <nav>
+    <ul class="menu">
+      
+    </ul>
+    <hr/>
+    </nav>
+
+<div class="article-meta">
+<h1><span class="title">SSH, the right way</span></h1>
+
+<h2 class="date">2020/07/13</h2>
+</div>
+
+<main>
+
+
+<p>When I first learned what SSH was, I thought I had it all figured out. I
+mean, how complicated could it be? It&rsquo;s just the command line, with
+remote access, right?</p>
+
+<p>Until I was faced with the dreaded error message:</p>
+
+<pre><code>Permission denied (publickey).
+</code></pre>
+
+<p>I wrestled with this error message for about half an hour every time I
+tried to set up keys on a new server or from a new client. I would think
+to myself, &ldquo;why does SSH have to be so complicated? Why can&rsquo;t I just
+create keypairs and have them work automatically?&rdquo;</p>
+
+<p>Eventually I figured out that was the issue: <strong>I was generating too many
+SSH keys.</strong></p>
+
+<h2 id="mistakes">Mistakes</h2>
+
+<p>It turns out that <strong>you don&rsquo;t need a separate keypair for every possible
+client-server combination.</strong> I would have a keypair named
+<code>mail_root_arch</code> for my connection to my mail server, as user <code>root</code>,
+from my home desktop, which was running Arch Linux at the time. Right
+off the bat, there is a lot wrong with this.</p>
+
+<p>Firstly, I should have taken the time to create a new user with <code>sudo</code>
+permissions, and disable remote <code>root</code> login. It&rsquo;s a bad idea to do
+anything as <code>root</code>, including remote access, even if
+<code>PasswordAuthentication</code> is disabled and you have a keypair for
+accessing it. It is instead much better to create a <code>sudo</code> user and
+authorize your keys to that.</p>
+
+<p>Secondly, having a keypair for every connection means that you must have
+more than one keypair per client. This means that you need to set the
+<code>IdentityFile</code> for each of your private keys in <code>~/.ssh/config</code>, since
+when the client cannot find one of five keyfile names (one of them being
+<code>id_rsa</code>) and there is no custom filename specified in the config, it
+will fail to connect. On top of this, setting your <code>IdentityFile</code>s must
+be done on every client that you use SSH on. This is a <em>wildly</em>
+overcomplicated way of doing things.</p>
+
+<p>Deviating from the default options also has some silly gotchas, one of
+them being that you cannot use the tilde to reference your home folder
+when creating a custom keyfile:</p>
+
+<pre><code>$ ssh-keygen
+Generating public/private rsa key pair.
+Enter file in which to save the key (/home/aaron/.ssh/id_rsa):
+~/.ssh/some-key
+Enter passphrase (empty for no passphrase):
+Enter same passphrase again:
+Saving key &quot;~/.ssh/some-key&quot; failed: No such file or directory
+</code></pre>
+
+<blockquote>
+<p>What the hell? But you&rsquo;re supposed to be creating it!</p>
+</blockquote>
+
+<p>Creating the keyfile by just specifying the name of the file, with the
+innocent assumption that <code>ssh-keygen</code> will just automatically save the
+file in <code>/home/user/.ssh</code>, reveals the second gotcha: this actually
+saves the keys in the current directory!</p>
+
+<p>I also went through a phase of having only one SSH keypair and using
+that wherever I wanted to connect with SSH. This is arguably worse
+because if the key is comprimised, finding out which machine was
+involved may be more difficult, and revoking it would also revoke access
+for every client that used it. It also involves storing the private key
+in more than one location, making it more vulnerable.</p>
+
+<h2 id="solution">Solution</h2>
+
+<p>There is, in fact, a much simpler way. <strong>Generate one keypair per
+machine, and leave it with the default name</strong> (usually <code>id_rsa</code>). Now
+there is no need to set the <code>IdentityFile</code> anywhere, keeping your
+<code>~/.ssh/config</code> tiny. Clients can then be authenticated on the desired
+servers with <code>ssh-copy-id</code>. If <code>PasswordAuthentication</code> is enabled on
+the server, this is very easy, as the clients can authorize themselves
+then and there, as follows:</p>
+
+<pre><code>$ ssh-copy-id -i id_rsa.pub user@server-name
+</code></pre>
+
+<p>If it is disabled, it can be temporarily enabled in
+<code>/etc/ssh/sshd_config</code> for this purpose, or if this isn&rsquo;t possible, the
+public key of the client can be copied over to a machine that already
+has key access. The above command can then be executed. No sharing of
+private keys between machines.</p>
+
+<p>In the event that you run into an error which tells you that a private
+key cannot be found, this is apparently a bug in SSH which can be
+avoided by following the error message&rsquo;s suggestion to run the same
+command with the <code>-f</code> flag added.</p>
+
+<h2 id="final-thoughts">Final thoughts</h2>
+
+<p>This is one of the issues you can run into using technologies that
+you&rsquo;re not yet familiar with: an inexperienced user such as myself may
+incorrectly assume that some action must be done in a certain way, then
+proceed to search for how to accomplish this on Google, and come across
+a result that tells me how to do it. It is often the case with using
+these infrastructure tools that you are not prevented from doing things
+in an incorrect way.</p>
+
+<p>It is much the same with real life hardware tools. For example, many
+people who service their own bicycles will own a pair of cable cutters,
+made for cutting brake cables and housing. They are made for that
+purpose only, but to a person who doesn&rsquo;t know beforehand, they look
+like they would be useful for cutting other things, which they would be,
+at least initially. Over time this actually damages them to the point
+where they can no longer be used for their intended purpose, as they
+have been blunted and cannot be easily sharpened.</p>
+
+<p>I don&rsquo;t think a tool would be much of a tool if it prevented you from
+doing things that might not be the best things to do.  Because
+occasionally, things do need to be bodged!</p>
+
+</main>
+
+  <footer>
+  
+  
+  </footer>
+  </body>
+</html>
+
